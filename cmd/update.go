@@ -1,0 +1,81 @@
+/*
+Copyright © 2025 NAME HERE <EMAIL ADDRESS>
+*/
+package cmd
+
+import (
+	"fmt"
+	"syscall"
+
+	"github.com/spf13/cobra"
+	"golang.org/x/term"
+)
+
+// updateCmd represents the update command
+var updateCmd = &cobra.Command{
+	Use:   "update",
+	Short: "Update the database of a switch",
+	Long:  `Update the database of a switch`,
+	Run: func(cmd *cobra.Command, args []string) {
+		if switchName == "" {
+			fmt.Println("Switch name is required")
+			return
+		}
+
+		if _, ok := c.Switches[switchName]; !ok {
+			fmt.Printf("Switch %s not found\n", switchName)
+			return
+		}
+
+		sw := c.Switches[switchName]
+
+		fmt.Print("Enter admin password: ")
+		password, err := term.ReadPassword(int(syscall.Stdin))
+		if err != nil {
+			fmt.Println("\nFailed to read password:")
+			fmt.Println(err.Error())
+			return
+		}
+		fmt.Println() // Add newline after password input
+
+		// Convert to string if needed
+		passwordStr := string(password)
+		fmt.Println("Password entered:", passwordStr)
+		sw.Password = passwordStr
+
+		if err := sw.ApplyTemplate(); err != nil {
+			fmt.Println("Failed to apply template:")
+			fmt.Println(err.Error())
+			return
+		}
+
+		if err := sw.FetchData(); err != nil {
+			fmt.Println("Failed to fetch data:")
+			fmt.Println(err.Error())
+			return
+		}
+
+		if err := sw.SaveKB(kbPool); err != nil {
+			fmt.Println("Failed to save KB:")
+			fmt.Println(err.Error())
+			return
+		}
+	},
+}
+
+var switchName string // Name of the switch to update
+
+func init() {
+	rootCmd.AddCommand(updateCmd)
+
+	// Here you will define your flags and configuration settings.
+
+	// Cobra supports Persistent Flags which will work for this command
+	// and all subcommands, e.g.:
+	// updateCmd.PersistentFlags().String("foo", "", "A help for foo")
+
+	// Cobra supports local flags which will only run when this command
+	// is called directly, e.g.:
+	updateCmd.Flags().StringVarP(&switchName, "switch", "s", "", "Name of the switch to update")
+	updateCmd.MarkFlagRequired("switch")
+}
