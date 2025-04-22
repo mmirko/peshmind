@@ -130,11 +130,12 @@ func (s *Switch) SaveKB(kbpool string) error {
 
 	for _, line := range strings.Split(s.Data, "\n") {
 		if len(line) > 0 {
-			re := regexp.MustCompile("\\s+(?P<mac>[a-z0-9]+-[a-z0-9]+)\\s+(?P<port>[0-9]+)\\s+(?P<vlan>[0-9]+)\\s+")
+			re := regexp.MustCompile("\\s+(?P<mac>[a-z0-9]+-[a-z0-9]+)\\s+(?P<port>[a-zA-Z0-9]+)\\s+(?P<vlan>[0-9]+)\\s+")
 			if re.MatchString(line) {
 				mac := re.ReplaceAllString(string(line), "${mac}")
 				mac = strings.ReplaceAll(mac, "-", "")
 				port := re.ReplaceAllString(string(line), "${port}")
+				port = strings.ToLower(port)
 				// vlan := re.ReplaceAllString(string(line), "${vlan}")
 				// Write the data to the file
 				_, err := file.WriteString(fmt.Sprintf("seen(a%s,a%s,%s).\n", s.Mac, mac, port))
@@ -144,11 +145,12 @@ func (s *Switch) SaveKB(kbpool string) error {
 				continue
 			}
 
-			re = regexp.MustCompile("\\s+(?P<mac>[a-z0-9]+-[a-z0-9]+)\\s+(?P<port>[0-9]+)\\s+")
+			re = regexp.MustCompile("\\s+(?P<mac>[a-z0-9]+-[a-z0-9]+)\\s+(?P<port>[a-zA-Z0-9]+)\\s+")
 			if re.MatchString(line) {
 				mac := re.ReplaceAllString(string(line), "${mac}")
 				mac = strings.ReplaceAll(mac, "-", "")
 				port := re.ReplaceAllString(string(line), "${port}")
+				port = strings.ToLower(port)
 				// vlan := re.ReplaceAllString(string(line), "${vlan}")
 				// Write the data to the file
 				_, err := file.WriteString(fmt.Sprintf("seen(a%s,a%s,%s).\n", s.Mac, mac, port))
@@ -156,7 +158,6 @@ func (s *Switch) SaveKB(kbpool string) error {
 					return fmt.Errorf("failed to write to KB file: %w", err)
 				}
 			}
-
 		}
 	}
 
