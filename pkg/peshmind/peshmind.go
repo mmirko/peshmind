@@ -7,6 +7,7 @@ import (
 )
 
 type Config struct {
+	EndPoint        string            `json:"endpoint"`
 	Switches        map[string]Switch `json:"switches"`
 	UserNameDefault string            `json:"username_default"`
 	PasswordDefault string            `json:"password_default"`
