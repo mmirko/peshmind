@@ -29,6 +29,17 @@ type switchTemplate struct {
 	funcMap  template.FuncMap
 }
 
+type SwitchPort struct {
+	SwitchID string
+	Name     string
+	EndPoint *SwitchPort
+}
+
+type SwitchDOT struct {
+	ID    string
+	Ports map[string]*SwitchPort
+}
+
 func (s *Switch) modelTemplate() (string, error) {
 	switch s.Model {
 	case "HP-Aruba":
