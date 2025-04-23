@@ -5,6 +5,8 @@ go 1.23.3
 replace github.com/mmirko/peshmind/pkg/peshmind => /pkg/peshmind
 
 require (
+	github.com/guregu/pengine v0.2.4 // indirect
+	github.com/ichiban/prolog v0.11.1 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/spf13/cobra v1.9.1 // indirect
 	github.com/spf13/pflag v1.0.6 // indirect
