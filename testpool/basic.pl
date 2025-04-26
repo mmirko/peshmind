@@ -1,6 +1,9 @@
 switch(x).
 switch(w).
 switch(z).
+switchname(x, 'SX').
+switchname(w, 'SW').
+switchname(z, 'SZ').
 seen(x,d,1).
 seen(x,w,8).
 seen(x,c,8).
@@ -35,3 +38,9 @@ direct(X,Y) :-	seen(X,K,MIDPORTX),
 		seen(Y,X,PORTY),
 		switch(K), switch(X), switch(Y), X \= Y, Y \= K, X \= K,
 		(PORTX \= MIDPORTX ; PORTY \= MIDPORTY).
+
+edgeswitch(XNAME) :-	switchname(X,XNAME),
+			seen(X,Y,PORT1),
+			seen(X,Z,PORT2),
+			switch(X), switch(Y), switch(Z), X \= Y, X \= Z, Y \= Z,
+			PORT1 == PORT2.
