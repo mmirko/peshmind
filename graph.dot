@@ -1,0 +1,13 @@
+digraph dsgraph {
+	node [label="\N"];
+	"privsw-0-1";
+	"privsw-0-2";
+	"privsw-3-5";
+	"privsw-3-30"; 
+	"privsw-0-1" -> "privsw-0-2" [port = 24]; 
+	"privsw-0-2" -> "privsw-0-1" [port = 24];
+	"privsw-3-5" -> "privsw-3-30" [port = 24];
+	"privsw-3-30" -> "privsw-3-5" [port = 24];
+	"privsw-0-1" -> "privsw-3-5" [port = 23];
+	"privsw-3-5" -> "privsw-0-1" [port = 23];
+}

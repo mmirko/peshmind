@@ -11,14 +11,16 @@ import (
 )
 
 type Switch struct {
-	Name        string `json:"name"`
-	Mac         string `json:"mac"`
-	Description string `json:"description"`
-	IP          string `json:"ip"`
-	Username    string `json:"username"`
-	Password    string `json:"password"`
-	Model       string `json:"model"`
-	Data        string `json:"data"`
+	Name        string   `json:"name"`
+	Mac         string   `json:"mac"`
+	Description string   `json:"description"`
+	IP          string   `json:"ip"`
+	Username    string   `json:"username"`
+	Password    string   `json:"password"`
+	Model       string   `json:"model"`
+	Port        int      `json:"port"`
+	ExtraPorts  []string `json:"extraports"`
+	Data        string   `json:"data"`
 }
 
 type switchTemplate struct {
