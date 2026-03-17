@@ -1,0 +1,10 @@
+digraph dsgraph {
+	node [label="\N"];
+	"privsw-0-1g" [ghost = true, ports = 24, mac = "00:40:00:00:00:01"];
+	"privsw-0-2";
+	"privsw-3-5";
+	"privsw-0-1g" -> "privsw-0-2" [port = 24]; 
+	"privsw-0-2" -> "privsw-0-1g" [port = 24];
+	"privsw-0-1g" -> "privsw-3-5" [port = 23];
+	"privsw-3-5" -> "privsw-0-1g" [port = 23];
+}

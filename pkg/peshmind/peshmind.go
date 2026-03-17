@@ -7,6 +7,7 @@ import (
 )
 
 type Config struct {
+	Debug           bool              `json:"debug"`
 	EndPoint        string            `json:"endpoint"`
 	Switches        map[string]Switch `json:"switches"`
 	Simulations     []string          `json:"simulations"`
