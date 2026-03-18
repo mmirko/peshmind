@@ -7,9 +7,12 @@ set -euo pipefail
 usage() {
 	echo "Usage: $0 clean" >&2
 	echo "       $0 sim <arg>" >&2
-	echo "       $0 run <arg>" >&2
+	echo "       $0 build <arg>" >&2
+	echo "       $0 serve" >&2
 	echo "       $0 save <arg>" >&2
 	echo "       $0 restore <arg>" >&2
+	echo "       $0 show <arg>" >&2
+	echo
 }
 
 clean() {

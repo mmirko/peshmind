@@ -26,6 +26,7 @@ var simulateCmd = &cobra.Command{
 
 		if err := s.Simulate(simName); err != nil {
 			fmt.Println("Error:", err)
+			return
 		}
 
 		if emitDotFile != "" {
@@ -39,6 +40,7 @@ var simulateCmd = &cobra.Command{
 				}
 			} else {
 				fmt.Println("Error emitting DOT:", err)
+				return
 			}
 		}
 
@@ -53,6 +55,7 @@ var simulateCmd = &cobra.Command{
 				}
 			} else {
 				fmt.Println("Error emitting output:", err)
+				return
 			}
 		}
 	},
