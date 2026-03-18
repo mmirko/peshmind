@@ -11,7 +11,6 @@ type Config struct {
 	EndPoint              string            `json:"endpoint"`
 	Switches              map[string]Switch `json:"switches"`
 	SimGeneratePercentage int               `json:"sim_generate_percentage"`
-	Simulations           []string          `json:"simulations"`
 	UserNameDefault       string            `json:"username_default"`
 	PasswordDefault       string            `json:"password_default"`
 }
@@ -21,7 +20,6 @@ func NewConfig() *Config {
 		Switches:              make(map[string]Switch),
 		UserNameDefault:       "admin",
 		PasswordDefault:       "ask",
-		Simulations:           make([]string, 0),
 		SimGeneratePercentage: 100,
 	}
 

@@ -31,10 +31,6 @@ func NewSimulation(config *Config) *Simulation {
 
 func (s *Simulation) Simulate(graphFile string) error {
 
-	if !elementInSlice(graphFile, s.Simulations) {
-		return errors.New("Graph file not in simulations list")
-	}
-
 	ctx := context.Background()
 	var graph *graphviz.Graphviz
 

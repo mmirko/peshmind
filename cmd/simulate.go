@@ -22,6 +22,7 @@ var simulateCmd = &cobra.Command{
 			return
 		}
 		s := peshmind.NewSimulation(c)
+		s.SimGeneratePercentage = simGeneratePercentage
 
 		if err := s.Simulate(simName); err != nil {
 			fmt.Println("Error:", err)
@@ -57,14 +58,16 @@ var simulateCmd = &cobra.Command{
 	},
 }
 
-var simName string     // Name of the simulation to run
-var emitDotFile string // Whether to emit a DOT file for visualization
-var outputFile string  // Output file for the simulation results
+var simName string            // Name of the simulation to run
+var simGeneratePercentage int // Percentage of data to generate for the simulation
+var emitDotFile string        // Whether to emit a DOT file for visualization
+var outputFile string         // Output file for the simulation results
 
 func init() {
 	rootCmd.AddCommand(simulateCmd)
 
 	simulateCmd.Flags().StringVarP(&simName, "simname", "s", "", "Name of the simulation to run")
+	simulateCmd.Flags().IntVarP(&simGeneratePercentage, "sim-generate-percentage", "g", 100, "Percentage of data to generate for the simulation")
 	simulateCmd.Flags().StringVarP(&emitDotFile, "emit-dot", "d", "", "Emit a DOT file for visualization")
 	simulateCmd.Flags().StringVarP(&outputFile, "output", "o", "", "Output file for the simulation results")
 	simulateCmd.MarkFlagRequired("simname")

@@ -34,7 +34,7 @@ var dotCmd = &cobra.Command{
 
 		ctx := context.Background()
 
-		as, err := client.Ask(ctx, "directp(X,Y,PORTX,PORTY)")
+		as, err := client.Ask(ctx, "directpn(X,Y,PORTX,PORTY)")
 		if err != nil {
 			cmd.PrintErrf("Error asking Prolog: %v\n", err)
 			return
@@ -132,8 +132,11 @@ var dotCmd = &cobra.Command{
 		for _, sw := range sws {
 			fmt.Printf("  subgraph cluster_%s {\n", san(sw.ID))
 			fmt.Printf("    label=\"%s\"\n", sw.ID)
+			fmt.Printf("    style=\"rounded,filled\";\n")
+			fmt.Printf("    fillcolor=\"#e0e0e0\";\n")
+			fmt.Printf("    color=\"#a0a0a0\";\n")
 			for _, port := range sw.Ports {
-				fmt.Printf("    %s_%s [label=\"%s\"];\n", san(sw.ID), port.Name, port.Name)
+				fmt.Printf("    %s_%s [label=\"%s\",shape=box, style=\"rounded,filled\", fillcolor=\"#0ea5e9\", color=\"#0369a1\", fontcolor=\"#ffffff\", penwidth=1.7];\n", san(sw.ID), port.Name, port.Name)
 			}
 			fmt.Println("  }")
 		}
