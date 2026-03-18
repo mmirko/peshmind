@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math/rand"
 	"os"
 	"strconv"
 	"strings"
@@ -14,11 +15,9 @@ import (
 
 type Simulation struct {
 	*Config
-	SimSwitches         map[string]*cgraph.Node      // Map of switch name to its graph node
-	SimSwitchesMac      map[string]string            // Map of switch name to its mac address
-	SimSwitchSize       map[string]int               // Map of switch name to number of ports
-	SimSwitchExtraPorts map[string][]string          // Map of switch name to list of extra ports
-	SimSwitchPorts      map[string]map[string]string // Map of switch name to port to either:
+	SimSwitches    map[string]*cgraph.Node      // Map of switch name to its graph node
+	SimSwitchesMac map[string]string            // Map of switch name to its mac address
+	SimSwitchPorts map[string]map[string]string // Map of switch name to port to either:
 	// - connected switch name
 	// - a mac address (for end devices)
 	// - empty string or missing key for unconnected ports
@@ -158,6 +157,13 @@ func (s *Simulation) Simulate(graphFile string) error {
 		for p := 1; p <= switchesSize[sName]; p++ {
 			portName := fmt.Sprintf("%d", p)
 			if _, ok := ports[portName]; !ok {
+				// Use sim_generate_percentage to determine whether to generate a fake MAC address
+				if s.SimGeneratePercentage < 100 {
+					if rand.Intn(100) >= s.SimGeneratePercentage {
+						continue
+					}
+				}
+
 				// Generate a fake MAC address for this unconnected port
 				fakeMac := fmt.Sprintf("00000000%02x%02x", swId, p)
 				switchPorts[sName][portName] = fakeMac
@@ -170,9 +176,6 @@ func (s *Simulation) Simulate(graphFile string) error {
 	s.SimSwitches = switches
 	s.SimSwitchesMac = switchesMac
 	s.SimSwitchPorts = switchPorts
-	// s.SimSwitchSize = switchesSize
-	// s.SimSwitchExtraPorts = switchesExtraPorts
-	// fmt.Println(s.getPortMacs(switchPorts, "privsw-0-1", "23"))
 
 	return nil
 
@@ -226,9 +229,39 @@ func (s *Simulation) getSwitchMacs(switchName string, excludePort string) []stri
 
 func (s *Simulation) EmitDot() (string, error) {
 	// Emit a DOT file representing the simulated network topology, best viewed with fdp
-	result := "digraph G {\n"
+	result := `digraph G {
+graph [
+    bgcolor="#f8fafc",
+    pad="0.3",
+    nodesep="0.45",
+    ranksep="0.75",
+    splines=true,
+    overlap=false,
+    fontname="Helvetica"
+  ];
+
+node [
+    shape=invtrapezium,
+    style="rounded,filled",
+    fillcolor="#ecfeff",
+    color="#06b6d4",
+    fontcolor="#0f172a",
+    fontname="Helvetica",
+    fontsize=11,
+    penwidth=1.2
+  ];
+  
+edge [
+    color="#64748b",
+    fontcolor="#334155",
+    fontname="Helvetica",
+    fontsize=10,
+    penwidth=1.3,
+    arrowsize=0.6
+  ];
+  `
 	for sName, ports := range s.SimSwitchPorts {
-		result += fmt.Sprintf("  \"%s\" [shape=box];\n", sName)
+		result += fmt.Sprintf("  \"%s\" [shape=box3d, style=\"rounded,filled\", fillcolor=\"#0ea5e9\", color=\"#0369a1\", fontcolor=\"#ffffff\", penwidth=1.7];\n", sName)
 		for portName, connected := range ports {
 			if connected == "" {
 				continue

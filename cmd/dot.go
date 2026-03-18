@@ -6,6 +6,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/guregu/pengine"
 	"github.com/mmirko/peshmind/pkg/peshmind"
@@ -93,9 +94,9 @@ var dotCmd = &cobra.Command{
 				}
 				var link string
 				if x < y {
-					link = fmt.Sprintf("%s_%s -- %s_%s", x, portx, y, porty)
+					link = fmt.Sprintf("%s_%s -- %s_%s", san(x), portx, san(y), porty)
 				} else {
-					link = fmt.Sprintf("%s_%s -- %s_%s", y, porty, x, portx)
+					link = fmt.Sprintf("%s_%s -- %s_%s", san(y), porty, san(x), portx)
 				}
 				if _, ok := links[link]; !ok {
 					links[link] = struct{}{}
@@ -112,9 +113,9 @@ var dotCmd = &cobra.Command{
 				}
 				var link string
 				if y < x {
-					link = fmt.Sprintf("%s_%s -- %s_%s", y, porty, x, portx)
+					link = fmt.Sprintf("%s_%s -- %s_%s", san(y), porty, san(x), portx)
 				} else {
-					link = fmt.Sprintf("%s_%s -- %s_%s", x, portx, y, porty)
+					link = fmt.Sprintf("%s_%s -- %s_%s", san(x), portx, san(y), porty)
 				}
 				if _, ok := links[link]; !ok {
 					links[link] = struct{}{}
@@ -129,10 +130,10 @@ var dotCmd = &cobra.Command{
 
 		fmt.Println("graph G {")
 		for _, sw := range sws {
-			fmt.Printf("  subgraph cluster_%s {\n", sw.ID)
+			fmt.Printf("  subgraph cluster_%s {\n", san(sw.ID))
 			fmt.Printf("    label=\"%s\"\n", sw.ID)
 			for _, port := range sw.Ports {
-				fmt.Printf("    %s_%s [label=\"%s\"];\n", sw.ID, port.Name, port.Name)
+				fmt.Printf("    %s_%s [label=\"%s\"];\n", san(sw.ID), port.Name, port.Name)
 			}
 			fmt.Println("  }")
 		}
@@ -141,6 +142,10 @@ var dotCmd = &cobra.Command{
 		}
 		fmt.Println("}")
 	},
+}
+
+func san(s string) string {
+	return strings.ReplaceAll(s, "-", "_")
 }
 
 func init() {
