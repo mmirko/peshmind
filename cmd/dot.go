@@ -25,7 +25,7 @@ var dotCmd = &cobra.Command{
 			URL:   c.EndPoint,
 			Chunk: 1,
 			Debug: false,
-		}.Create(context.Background(), true)
+		}.Create(context.Background(), false)
 
 		if err != nil {
 			cmd.PrintErrf("Error creating client: %v\n", err)
@@ -33,6 +33,31 @@ var dotCmd = &cobra.Command{
 		}
 
 		ctx := context.Background()
+
+		gwc := make([][]string, 0) // Get all ghost switches pairs
+
+		gs, err := client.Ask(ctx, "ghostn(X,Y)")
+		if err != nil {
+			cmd.PrintErrf("Error asking Prolog: %v\n", err)
+			return
+		}
+
+		for gs.Next(ctx) {
+			cur := gs.Current()
+			var x string
+			if cur["X"].Atom != nil {
+				x = *cur["X"].Atom
+			} else if cur["X"].Number != nil {
+				x = cur["X"].Number.String()
+			}
+			var y string
+			if cur["Y"].Atom != nil {
+				y = *cur["Y"].Atom
+			} else if cur["Y"].Number != nil {
+				y = cur["Y"].Number.String()
+			}
+			gwc = append(gwc, []string{x, y})
+		}
 
 		as, err := client.Ask(ctx, "directpn(X,Y,PORTX,PORTY)")
 		if err != nil {
@@ -92,14 +117,37 @@ var dotCmd = &cobra.Command{
 						Name:     porty,
 					},
 				}
-				var link string
-				if x < y {
-					link = fmt.Sprintf("%s_%s -- %s_%s", san(x), portx, san(y), porty)
-				} else {
-					link = fmt.Sprintf("%s_%s -- %s_%s", san(y), porty, san(x), portx)
+
+				// Check if the link goes through a ghost switch
+				isGhost := false
+				var ghostId int
+				for i, pair := range gwc {
+					if (pair[0] == x && pair[1] == y) || (pair[0] == y && pair[1] == x) {
+						isGhost = true
+						ghostId = i
+						break
+					}
 				}
-				if _, ok := links[link]; !ok {
-					links[link] = struct{}{}
+
+				if isGhost {
+					link := fmt.Sprintf("%s_%s -- ghost_%d", san(x), portx, ghostId)
+					if _, ok := links[link]; !ok {
+						links[link] = struct{}{}
+					}
+					link = fmt.Sprintf("%s_%s -- ghost_%d", san(y), porty, ghostId)
+					if _, ok := links[link]; !ok {
+						links[link] = struct{}{}
+					}
+				} else {
+					var link string
+					if x < y {
+						link = fmt.Sprintf("%s_%s -- %s_%s", san(x), portx, san(y), porty)
+					} else {
+						link = fmt.Sprintf("%s_%s -- %s_%s", san(y), porty, san(x), portx)
+					}
+					if _, ok := links[link]; !ok {
+						links[link] = struct{}{}
+					}
 				}
 			}
 			if _, ok := sws[y].Ports[porty]; !ok {
@@ -111,14 +159,36 @@ var dotCmd = &cobra.Command{
 						Name:     portx,
 					},
 				}
-				var link string
-				if y < x {
-					link = fmt.Sprintf("%s_%s -- %s_%s", san(y), porty, san(x), portx)
-				} else {
-					link = fmt.Sprintf("%s_%s -- %s_%s", san(x), portx, san(y), porty)
+				// Check if the link goes through a ghost switch
+				isGhost := false
+				var ghostId int
+				for i, pair := range gwc {
+					if (pair[0] == x && pair[1] == y) || (pair[0] == y && pair[1] == x) {
+						isGhost = true
+						ghostId = i
+						break
+					}
 				}
-				if _, ok := links[link]; !ok {
-					links[link] = struct{}{}
+
+				if isGhost {
+					link := fmt.Sprintf("%s_%s -- ghost_%d", san(y), porty, ghostId)
+					if _, ok := links[link]; !ok {
+						links[link] = struct{}{}
+					}
+					link = fmt.Sprintf("%s_%s -- ghost_%d", san(x), portx, ghostId)
+					if _, ok := links[link]; !ok {
+						links[link] = struct{}{}
+					}
+				} else {
+					var link string
+					if y < x {
+						link = fmt.Sprintf("%s_%s -- %s_%s", san(y), porty, san(x), portx)
+					} else {
+						link = fmt.Sprintf("%s_%s -- %s_%s", san(x), portx, san(y), porty)
+					}
+					if _, ok := links[link]; !ok {
+						links[link] = struct{}{}
+					}
 				}
 			}
 
@@ -128,7 +198,12 @@ var dotCmd = &cobra.Command{
 			}
 		}
 
+		client.Close()
+
 		fmt.Println("graph G {")
+		for i := range gwc {
+			fmt.Printf("  ghost_%d [label=\"ghostsw-%d\",shape=ellipse, style=\"dashed,filled\", fillcolor=\"#f87171\", color=\"#b91c1c\", fontcolor=\"#ffffff\", penwidth=1.7];\n", i, i)
+		}
 		for _, sw := range sws {
 			fmt.Printf("  subgraph cluster_%s {\n", san(sw.ID))
 			fmt.Printf("    label=\"%s\"\n", sw.ID)

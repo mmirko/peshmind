@@ -55,3 +55,16 @@ edgeswitchp(X,PORT) :-  seen(X,Y,PORT),
 % An edge switch and it's port by name
 edgeswitchpn(XNAME,PORT) :- switchname(X,XNAME),
 			edgeswitchp(X,PORT).
+
+% If two directly connected switches sees the same thing (not a switch) on the ports they are connected on, then there is ghost switch between them.
+ghost(X,Y) :- directp(X,Y,PORTX,PORTY),
+		seen(X,Z,PORTX),
+		seen(Y,Z,PORTY),
+		\+ switch(Z).
+
+% Ghost switches by name
+ghostn(XNAME,YNAME) :- switchname(X,XNAME),
+		switchname(Y,YNAME),
+		XNAME @< YNAME,
+		once(ghost(X,Y)).
+

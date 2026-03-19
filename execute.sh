@@ -28,6 +28,7 @@ clean() {
 
 sim() {
 	local arg="$1"
+	clean
 	go build
 	cp simpool/peshmind.json .
 	./peshmind simulate -config peshmind.json -d simout.dot -o kbpool/privsw-sim.pl -s "$arg" 
@@ -36,6 +37,7 @@ sim() {
 
 build() {
 	local arg="$1"
+	clean
 	restore "$arg"
 	go build
 	:
