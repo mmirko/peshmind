@@ -9,6 +9,7 @@
 \usepackage{fancyhdr}
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage{multicol}
 
 \geometry{margin=2.5cm}
 
@@ -34,7 +35,7 @@
 \large Prolog-based Engine for System \& Host Management and INference Daemon \\
 \vspace{0.5cm}
 Relazione Tecnica del Progetto}
-\author{Mirko Mariotti \\ \texttt{mirko@mirkomariotti.it}}
+\author{Mirko Mariotti}
 \date{Marzo 2026}
 
 \begin{document}
@@ -48,31 +49,23 @@ Relazione Tecnica del Progetto}
 
 \section{Introduzione}
 
-PeshMind è un sistema avanzato per la scoperta e l'analisi della topologia di rete che utilizza l'inferenza logica Prolog per ricostruire la topologia di una rete LAN basandosi esclusivamente sugli indirizzi MAC osservati dagli switch di rete. Il sistema combina un'applicazione CLI scritta in Go con un motore di ragionamento Prolog per identificare le connessioni di rete, gli switch interni/di accesso e i potenziali "ghost switch" (switch non gestiti) presenti nell'infrastruttura di rete.
+PeshMind è un sistema per la scoperta e l'analisi della topologia di una rete LAN che si basa esclusivamente
+sugli indirizzi MAC osservati dagli switch di rete.
+Il sistema combina un'applicazione CLI scritta in Go con un motore Prolog per identificare 
+le connessioni di rete, gli switch interni/di accesso e i potenziali "ghost switch" (switch non censiti)
+presenti nell'infrastruttura di rete.
 
-\subsection{Motivazione}
+\subsection{Motivazione e Obiettivi}
 
-In reti complesse di grandi dimensioni, la documentazione della topologia fisica spesso diventa obsoleta o incompleta. PeshMind affronta questo problema fornendo un sistema automatizzato che:
+In reti complesse di grandi dimensioni, la documentazione della topologia fisica spesso diventa obsoleta 
+o incompleta. PeshMind affronta questo problema fornendo un sistema automatizzato che:
 
 \begin{itemize}
     \item Ricostruisce la topologia di rete analizzando solo le tabelle MAC degli switch
-    \item Identifica automaticamente switch non documentati ("ghost switch")
+    \item Identifica automaticamente switch non censiti ("ghost switch"), abilitando la possibilità di scoprire anomalie e dispositivi non autorizzati
     \item Distingue tra switch di core/distribuzione e switch di accesso
     \item Fornisce visualizzazioni grafiche della topologia inferita
-    \item Permette simulazioni per validare configurazioni di rete
 \end{itemize}
-
-\subsection{Obiettivi del Progetto}
-
-Gli obiettivi principali di PeshMind sono:
-
-\begin{enumerate}
-    \item Automatizzare la scoperta della topologia di rete
-    \item Ridurre l'errore umano nella documentazione di rete
-    \item Fornire un sistema di interrogazione logica per analisi di rete
-    \item Identificare anomalie e configurazioni non documentate
-    \item Supportare la pianificazione e simulazione di modifiche alla rete
-\end{enumerate}
 
 \section{Architettura del Sistema}
 
@@ -82,10 +75,10 @@ Il sistema PeshMind è composto da tre componenti principali che interagiscono t
 
 \subsubsection{Applicazione CLI Go}
 
-L'applicazione CLI, sviluppata in Go utilizzando il framework Cobra, fornisce l'interfaccia utente per:
+L'applicazione CLI \textbf{peshmind}, sviluppata in Go, coordina tutte le operazioni del sistema, comprese le
+due altre componenti. I suoi sottocomandi, realizzati con il framework Cobra, gestiscono le seguenti funzionalità:
 
 \begin{itemize}
-    \item Gestione della configurazione degli switch
     \item Recupero automatico delle tabelle MAC dagli switch fisici
     \item Conversione dei dati in fatti Prolog
     \item Avvio e gestione del motore Prolog
@@ -108,25 +101,35 @@ La base di conoscenza memorizza i dati degli switch e degli indirizzi MAC sotto 
     \item \texttt{seen(SwitchMac, DeviceMac, Port)} - Registra MAC visti su porte specifiche
 \end{itemize}
 
-\subsection{Flusso di Lavoro}
+\subsection{Due possibili flussi di lavoro}
 
-Il flusso di lavoro del sistema segue questi passaggi:
+Il sistema supporta due flussi di lavoro principali, quello di analisi di una rete esistente e 
+quello di simulazione di topologie di rete. Il secondo è particolarmente utile per testare e validare le regole
+di inferenza Prolog prima di applicarle a dati reali.
 
-\begin{enumerate}
-    \item \textbf{Configurazione}: Gli switch vengono configurati in \texttt{peshmind.json}
-    \item \textbf{Acquisizione Dati}: Le tabelle MAC vengono scaricate tramite SSH
-    \item \textbf{Conversione}: I dati vengono convertiti in fatti Prolog
-    \item \textbf{Caricamento KB}: I fatti vengono caricati nella knowledge base
-    \item \textbf{Inferenza}: Le regole Prolog deducono la topologia
-    \item \textbf{Interrogazione}: L'utente può interrogare il sistema
-    \item \textbf{Visualizzazione}: I risultati vengono presentati o visualizzati
-\end{enumerate}
-
-\section{Implementazione}
+\begin{multicols}{2}
+        \textbf{Analisi Rete Esistente}
+        \begin{enumerate}
+            \item Configurazione switch in \texttt{peshmind.json}
+            \item Acquisizione tabelle MAC via SSH o telnet
+            \item Conversione dati in fatti Prolog
+            \item Caricamento KB e inferenza
+            \item Interrogazione e visualizzazione risultati
+        \end{enumerate}
+\columnbreak
+        \textbf{Simulazione Topologia di Rete}
+        \begin{enumerate}
+            \item Creazione file DOT con topologia desiderata
+            \item Esecuzione simulazione per generare fatti Prolog
+            \item Caricamento KB e inferenza
+            \item Interrogazione e visualizzazione risultati
+            \item Iterazione per testare diverse configurazioni
+        \end{enumerate}
+\end{multicols}
 
 \subsection{Struttura del Codice}
 
-Il progetto è organizzato nella seguente struttura:
+I sorgenti del progetto sono organizzati nella seguente struttura:
 
 \begin{verbatim}
 peshmind/
@@ -149,8 +152,32 @@ peshmind/
     |-- server.pl       # Server HTTP Pengines
     +-- createkb.sh     # Script creazione KB
 \end{verbatim}
+\subsection{Tecnologie Utilizzate}
 
-\subsection{Comandi CLI}
+\subsubsection{Go}
+
+Il linguaggio Go è stato scelto per l'applicazione CLI in quanto offre performance eccellenti,
+ consente la compilazione statica con generazione di un singolo binario facilmente deployable, 
+ fornisce un supporto eccellente per la programmazione concorrente e mette a disposizione un ricco
+  ecosistema di librerie pronte all'uso. \\
+Le librerie Go che sono state utilizzate includono:
+\begin{itemize}
+    \item \textbf{Cobra}: Framework CLI per comandi e flag
+    \item \textbf{Pengine Client}: Client Go per interrogare Pengines
+    \item \textbf{go-graphviz}: Parsing e generazione di grafi DOT
+    \item \textbf{golang.org/x/term}: Input sicuro password
+\end{itemize}
+\subsubsection{SWI-Prolog}
+
+SWI-Prolog fornisce il motore di inferenza grazie a un potente sistema di inferenza logica, alla 
+libreria Pengines per l'esposizione di API HTTP, a una sintassi dichiarativa particolarmente adatta alla 
+definizione di regole complesse e a ottime prestazioni anche su knowledge base di grandi dimensioni.
+
+\section{Utilizzo}
+\subsection{Comandi CLI generali}
+
+Gran parte dei comandi CLI di PeshMind sono utilizzabili sia per l'analisi di una rete reale che per la 
+simulazione di topologie, in quanto operano sui fatti Prolog generati da entrambe le modalità.
 
 \subsubsection{List}
 
@@ -159,27 +186,6 @@ Il comando \texttt{list} visualizza tutti gli switch configurati con i loro dett
 \begin{lstlisting}
 peshmind list
 \end{lstlisting}
-
-\subsubsection{Update}
-
-Il comando \texttt{update} recupera le tabelle MAC dagli switch:
-
-\begin{lstlisting}
-# Aggiorna uno switch specifico
-peshmind update --switch switch-01
-
-# Aggiorna tutti gli switch
-peshmind update --switch all
-\end{lstlisting}
-
-Questo comando:
-\begin{enumerate}
-    \item Si connette allo switch via SSH usando expect
-    \item Esegue comandi per ottenere la tabella MAC
-    \item Parsifica l'output con espressioni regolari
-    \item Genera fatti Prolog nel formato \texttt{seen/3}
-    \item Salva il file nella directory \texttt{kbpool}
-\end{enumerate}
 
 \subsubsection{Serve}
 
@@ -229,6 +235,31 @@ Il file DOT generato include:
     \item Codifica colori per migliore leggibilità
 \end{itemize}
 
+\subsection{Comandi per l'analisi di una rete reale}
+
+\subsubsection{Update}
+
+Il comando \texttt{update} recupera le tabelle MAC dagli switch:
+
+\begin{lstlisting}
+# Aggiorna uno switch specifico
+peshmind update --switch switch-01
+
+# Aggiorna tutti gli switch
+peshmind update --switch all
+\end{lstlisting}
+
+Questo comando:
+\begin{enumerate}
+    \item Si connette allo switch via SSH usando expect
+    \item Esegue comandi per ottenere la tabella MAC
+    \item Parsifica l'output con espressioni regolari
+    \item Genera fatti Prolog nel formato \texttt{seen/3}
+    \item Salva il file nella directory \texttt{kbpool}
+\end{enumerate}
+
+\subsection{Comandi per la simulazione di topologie}
+
 \subsubsection{Simulate}
 
 Il comando \texttt{simulate} permette di testare topologie:
@@ -239,11 +270,16 @@ peshmind simulate --simname topology.dot \
     --output facts.pl
 \end{lstlisting}
 
-\subsection{Regole di Inferenza Prolog}
+Anch'esso. alla pari del comando \texttt{update}, genera fatti Prolog, ma invece di connettersi a switch reali,
+genera i fatti in maniera programmatica a partire da un file DOT che descrive la topologia desiderata. Supporta
+attributi speciali per identificare ghost switch, specificare MAC address e porte di connessione.
 
-Il sistema utilizza diverse regole Prolog per inferire la topologia di rete:
+\section{Inferenza Logica con Prolog}
 
-\subsubsection{Predicato far/2}
+Il cuore del sistema è il motore di inferenza Prolog, che utilizza i fatti generati per dedurre la topologia di rete.
+In questa sezione vengono descritte le principali regole di inferenza implementate in Prolog.
+
+\subsection{Predicato far/2}
 
 Due switch sono "lontani" se sono connessi a un terzo switch sulla stessa porta:
 
@@ -261,7 +297,7 @@ far(X,Y) :-
 
 Questo predicato identifica la presenza di uno switch intermedio tra due switch.
 
-\subsubsection{Predicato direct/2}
+\subsection{Predicato direct/2}
 
 Due switch sono direttamente connessi se non sono lontani:
 
@@ -269,7 +305,7 @@ Due switch sono direttamente connessi se non sono lontani:
 direct(X,Y) :- \+ far(X,Y).
 \end{lstlisting}
 
-\subsubsection{Predicato directp/4}
+\subsection{Predicato directp/4}
 
 Connessione diretta con informazioni sulle porte:
 
@@ -280,7 +316,7 @@ directp(X,Y,PORTX,PORTY) :-
     \+ far(X,Y).
 \end{lstlisting}
 
-\subsubsection{Predicato ghost/2}
+\subsection{Predicato ghost/2}
 
 Identifica ghost switch tra due switch direttamente connessi:
 
@@ -294,7 +330,7 @@ ghost(X,Y) :-
 
 Se due switch vedono lo stesso MAC (non switch) sulle porte di interconnessione, esiste un ghost switch.
 
-\subsubsection{Predicato internalswitch/1}
+\subsection{Predicato internalswitch/1}
 
 Identifica switch interni (core/distribuzione):
 
@@ -309,7 +345,7 @@ internalswitch(X) :-
 
 Uno switch è interno se è connesso ad almeno due switch diversi.
 
-\subsubsection{Predicato edgeswitch/1}
+\subsection{Predicato edgeswitch/1}
 
 Identifica switch di accesso:
 
@@ -317,30 +353,12 @@ Identifica switch di accesso:
 edgeswitch(X) :- switch(X), \+ internalswitch(X).
 \end{lstlisting}
 
-\subsection{Modalità Simulazione}
-
-La modalità di simulazione permette di testare topologie usando file DOT. Il sistema:
-
-\begin{enumerate}
-    \item Parsifica il grafo DOT usando la libreria \texttt{go-graphviz}
-    \item Identifica nodi switch (normali e ghost)
-    \item Estrae le connessioni dagli archi del grafo
-    \item Genera MAC address fittizi per dispositivi end-node
-    \item Produce fatti Prolog equivalenti
-    \item Supporta attributi speciali:
-    \begin{itemize}
-        \item \texttt{ghost="true"} - Marca ghost switch
-        \item \texttt{mac="..."} - Specifica MAC per ghost switch
-        \item \texttt{port="N"} - Specifica porta di connessione
-        \item \texttt{ports="N"} - Numero di porte per ghost switch
-    \end{itemize}
-\end{enumerate}
-
-\section{Configurazione}
+\section{Dettagli di Configurazione}
 
 \subsection{File di Configurazione}
 
-Il file \texttt{peshmind.json} definisce gli switch e i parametri di sistema:
+Il file \texttt{peshmind.json} definisce gli switch e i parametri di sistema in entrambe le modalità 
+(di analisi e simulazione). Ecco un esempio di configurazione:
 
 \begin{lstlisting}
 {
@@ -363,8 +381,6 @@ Il file \texttt{peshmind.json} definisce gli switch e i parametri di sistema:
 }
 \end{lstlisting}
 
-\subsection{Parametri di Configurazione}
-
 \begin{itemize}
     \item \textbf{debug}: Abilita output verboso
     \item \textbf{endpoint}: URL dell'endpoint Pengines HTTP
@@ -382,7 +398,33 @@ Il file \texttt{peshmind.json} definisce gli switch e i parametri di sistema:
     \end{itemize}
 \end{itemize}
 
-\section{Casi d'Uso}
+\subsection{Modalità Analisi Rete Esistente}
+Per analizzare una rete esistente, è necessario solamente configurare correttamente il file \texttt{peshmind.json} 
+con le informazioni di accesso per ogni switch gestito.
+
+\subsection{Modalità Simulazione}
+
+Nel caso della simulazione, in aggiunta alla configurazione, è necessario creare un file DOT che descriva la topologia
+di rete desiderata. Il file DOT deve seguire una struttura specifica per essere analizzato correttamente dal sistema
+di simulazione.
+La modalità di simulazione permette di testare topologie usando file DOT. Il sistema:
+
+\begin{enumerate}
+    \item Parsifica il grafo DOT usando la libreria \texttt{go-graphviz}
+    \item Identifica nodi switch (normali e ghost)
+    \item Estrae le connessioni dagli archi del grafo
+    \item Genera MAC address fittizi per dispositivi end-node
+    \item Produce fatti Prolog equivalenti
+    \item Supporta attributi speciali:
+    \begin{itemize}
+        \item \texttt{ghost="true"} - Marca ghost switch
+        \item \texttt{mac="..."} - Specifica MAC per ghost switch
+        \item \texttt{port="N"} - Specifica porta di connessione
+        \item \texttt{ports="N"} - Numero di porte per ghost switch
+    \end{itemize}
+\end{enumerate}
+
+\section{Esempi di Utilizzo}
 
 \subsection{Scoperta Topologia di Rete Esistente}
 
@@ -432,36 +474,7 @@ Il file \texttt{peshmind.json} definisce gli switch e i parametri di sistema:
     \item Identificare potenziali problemi prima dell'implementazione
 \end{enumerate}
 
-\section{Tecnologie Utilizzate}
 
-\subsection{Go}
-
-Il linguaggio Go è stato scelto per l'applicazione CLI per:
-\begin{itemize}
-    \item Performance eccellente
-    \item Compilazione statica (singolo binario)
-    \item Eccellente supporto per concorrenza
-    \item Ricco ecosistema di librerie
-\end{itemize}
-
-\subsection{SWI-Prolog}
-
-SWI-Prolog fornisce il motore di inferenza con:
-\begin{itemize}
-    \item Potente sistema di inferenza logica
-    \item Libreria Pengines per HTTP API
-    \item Sintassi dichiarativa per regole complesse
-    \item Eccellenti performance su knowledge base di grandi dimensioni
-\end{itemize}
-
-\subsection{Librerie Go Utilizzate}
-
-\begin{itemize}
-    \item \textbf{Cobra}: Framework CLI per comandi e flag
-    \item \textbf{Pengine Client}: Client Go per interrogare Pengines
-    \item \textbf{go-graphviz}: Parsing e generazione di grafi DOT
-    \item \textbf{golang.org/x/term}: Input sicuro password
-\end{itemize}
 
 \section{Limitazioni e Sviluppi Futuri}
 
@@ -537,126 +550,5 @@ Il progetto è rilasciato con licenza Apache 2.0, favorendo l'adozione e la cont
 \end{itemize}
 
 \appendix
-
-\section{Esempi di Query Prolog}
-
-Di seguito alcuni esempi di query utili:
-
-\subsection{Trovare Tutti gli Switch}
-
-\begin{lstlisting}
-?- switch(X).
-\end{lstlisting}
-
-\subsection{Trovare Switch Direttamente Connessi}
-
-\begin{lstlisting}
-?- directn('switch-01', Y).
-\end{lstlisting}
-
-\subsection{Identificare Porte di Connessione}
-
-\begin{lstlisting}
-?- directpn('switch-01', 'switch-02', PX, PY).
-\end{lstlisting}
-
-\subsection{Trovare Tutti i Ghost Switch}
-
-\begin{lstlisting}
-?- ghostn(X, Y).
-\end{lstlisting}
-
-\section{Script Bash per Automazione}
-
-\subsection{Script di Update Periodico}
-
-\begin{lstlisting}
-#!/bin/bash
-# update-network.sh
-# Aggiorna automaticamente la topologia di rete
-
-PESHMIND="/usr/local/bin/peshmind"
-KBPOOL="/var/lib/peshmind/kbpool"
-LOGFILE="/var/log/peshmind/update.log"
-
-echo "$(date): Starting network update" >> $LOGFILE
-
-# Update all switches
-$PESHMIND update --switch all >> $LOGFILE 2>&1
-
-if [ $? -eq 0 ]; then
-    echo "$(date): Update completed successfully" >> $LOGFILE
-    
-    # Generate topology visualization
-    $PESHMIND dot > /var/www/html/topology.dot
-    dot -Tsvg /var/www/html/topology.dot \
-        -o /var/www/html/topology.svg
-else
-    echo "$(date): Update failed" >> $LOGFILE
-    exit 1
-fi
-\end{lstlisting}
-
-\section{Esempio Completo}
-
-\subsection{Configurazione di Esempio}
-
-File \texttt{peshmind.json} per rete a 4 switch:
-
-\begin{lstlisting}[basicstyle=\ttfamily\footnotesize]
-{
-  "debug": false,
-  "endpoint": "http://localhost:3030/pengine",
-  "sim_generate_percentage": 100,
-  "username_default": "admin",
-  "password_default": "ask",
-  "switches": {
-    "core-sw-01": {
-      "name": "core-sw-01",
-      "mac": "e4115b740100",
-      "description": "Switch Core Edificio A",
-      "ip": "10.0.0.1",
-      "username": "admin",
-      "password": "ask",
-      "model": "HP-Aruba",
-      "port": 48,
-      "extraports": ["49", "50"]
-    },
-    "dist-sw-02": {
-      "name": "dist-sw-02",
-      "mac": "002347bb73c0",
-      "description": "Switch Distribuzione Piano 2",
-      "ip": "10.0.0.2",
-      "username": "admin",
-      "password": "ask",
-      "model": "HP-Aruba",
-      "port": 24,
-      "extraports": []
-    },
-    "access-sw-03": {
-      "name": "access-sw-03",
-      "mac": "0011856d4640",
-      "description": "Switch Accesso Laboratorio",
-      "ip": "10.0.3.5",
-      "username": "admin",
-      "password": "ask",
-      "model": "HP-Aruba-Press",
-      "port": 24,
-      "extraports": []
-    },
-    "access-sw-04": {
-      "name": "access-sw-04",
-      "mac": "e0071ba2d8a0",
-      "description": "Switch Accesso Uffici",
-      "ip": "10.0.3.30",
-      "username": "admin",
-      "password": "ask",
-      "model": "HP-Aruba",
-      "port": 24,
-      "extraports": []
-    }
-  }
-}
-\end{lstlisting}
 
 \end{document}
