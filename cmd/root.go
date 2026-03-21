@@ -16,7 +16,7 @@ limitations under the License.
 package cmd
 
 import (
-	"log"
+	"fmt"
 	"os"
 
 	"github.com/mmirko/peshmind/pkg/peshmind"
@@ -28,9 +28,15 @@ var rootCmd = &cobra.Command{
 	Use:   "peshmind",
 	Short: "Prolog-based Engine for System & Host Management and INference Daemon",
 	Long:  `Peshmind is a Go-based application that uses Prolog for system and host management.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		if cfgFile != "" {
+			err := c.LoadConfig(cfgFile)
+			if err != nil {
+				return fmt.Errorf("error loading config file: %w", err)
+			}
+		}
+		return nil
+	},
 }
 
 var cfgFile string // config file
@@ -38,8 +44,6 @@ var kbPool string  // Knowledge base pool, used to store the knowledge base in f
 
 var c *peshmind.Config // Config object
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
@@ -48,24 +52,11 @@ func Execute() {
 }
 
 func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "peshmind.json", "config file (default peshmind.json)")
 
 	rootCmd.PersistentFlags().StringVarP(&kbPool, "kbpool", "k", "kbpool", "Knowledge base pool directory (default kbpool)")
 
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
 	c = peshmind.NewConfig()
-
-	if cfgFile != "" {
-		err := c.LoadConfig(cfgFile)
-		if err != nil {
-			log.Fatalf("Error loading config file: %v", err)
-		}
-	}
 }

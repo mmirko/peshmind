@@ -44,13 +44,16 @@ var simulateCmd = &cobra.Command{
 			}
 		}
 
-		if outputFile != "" {
-			if outputData, err := s.EmitOutput(); err == nil {
-				if err := os.WriteFile(outputFile, []byte(outputData), 0644); err != nil {
-					fmt.Println("Error writing output file:", err)
-				} else {
-					if s.Debug {
-						fmt.Println("Output file written to", outputFile)
+		if outputDir != "" {
+			if outputMap, err := s.EmitOutput(); err == nil {
+				for sName, swResult := range outputMap {
+					outputFile := fmt.Sprintf("%s/%s.pl", outputDir, sName)
+					if err := os.WriteFile(outputFile, []byte(swResult), 0644); err != nil {
+						fmt.Println("Error writing output file:", err)
+					} else {
+						if s.Debug {
+							fmt.Println("Output file written to", outputFile)
+						}
 					}
 				}
 			} else {
@@ -64,7 +67,7 @@ var simulateCmd = &cobra.Command{
 var simName string            // Name of the simulation to run
 var simGeneratePercentage int // Percentage of data to generate for the simulation
 var emitDotFile string        // Whether to emit a DOT file for visualization
-var outputFile string         // Output file for the simulation results
+var outputDir string          // Output directory for the simulation results
 
 func init() {
 	rootCmd.AddCommand(simulateCmd)
@@ -72,6 +75,6 @@ func init() {
 	simulateCmd.Flags().StringVarP(&simName, "simname", "s", "", "Name of the simulation to run")
 	simulateCmd.Flags().IntVarP(&simGeneratePercentage, "sim-generate-percentage", "g", 100, "Percentage of data to generate for the simulation")
 	simulateCmd.Flags().StringVarP(&emitDotFile, "emit-dot", "d", "", "Emit a DOT file for visualization")
-	simulateCmd.Flags().StringVarP(&outputFile, "output", "o", "", "Output file for the simulation results")
+	simulateCmd.Flags().StringVarP(&outputDir, "output-dir", "o", "", "Output directory for the simulation results")
 	simulateCmd.MarkFlagRequired("simname")
 }

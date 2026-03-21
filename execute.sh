@@ -16,36 +16,48 @@ usage() {
 }
 
 clean() {
-	rm -f peshmind.json
-	rm -f peshmind
+	if [[ ! -f peshmind.json ]]; then
+		exit 0
+	fi
+	go build
 	rm -f simout.dot
 	rm -f kbpool/data.pl
 	cd kbpool >/dev/null 2>&1
 	./profile.sh clean
 	cd - >/dev/null 2>&1
+	rm -f peshmind
+	rm -f peshmind.json
 	:
 }
 
 sim() {
 	local arg="$1"
-	clean
+	if [[ -f peshmind.json ]]; then
+		clean
+	fi
 	go build
 	cp simpool/peshmind.json .
-	./peshmind simulate -config peshmind.json -d simout.dot -o kbpool/privsw-sim.pl -s "$arg" 
+	./peshmind simulate --config peshmind.json -d simout.dot -o kbpool -s "$arg" 
 	:
 }
 
 build() {
 	local arg="$1"
-	clean
+	if [[ -f peshmind.json ]]; then
+		clean
+	fi
 	restore "$arg"
 	go build
 	:
 }
 
 serve() {
+	if [[ ! -f peshmind.json ]]; then
+		echo "Error: peshmind.json not found. Please run '$0 build or sim <arg>' first." >&2
+		exit 1
+	fi
 	go build
-	./peshmind serve -config peshmind.json
+	./peshmind serve --config peshmind.json
 	:
 }
 
@@ -85,7 +97,7 @@ show() {
 			;;
 		"inferreddot")
 			go build
-			./peshmind dot -config peshmind.json | fdp -Txlib
+			./peshmind dot --config peshmind.json | fdp -Txlib
 			;;
 		*)
 			echo "Error: invalid argument '$arg' for show command." >&2
@@ -101,6 +113,7 @@ restore() {
 		exit 1
 	fi
 	cp -a "$PROFILES_DIR/$arg/peshmind.json" .
+	go build
 	cd kbpool >/dev/null 2>&1
 	./profile.sh restore "$arg"
 	cd - >/dev/null 2>&1

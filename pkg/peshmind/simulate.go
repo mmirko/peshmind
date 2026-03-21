@@ -275,28 +275,30 @@ edge [
 	return result, nil
 }
 
-func (s *Simulation) EmitOutput() (string, error) {
+func (s *Simulation) EmitOutput() (map[string]string, error) {
 	// Emit a simple text output of the simulated network topology
-	var result strings.Builder
+	result := make(map[string]string)
 	for sName := range s.SimSwitches {
+		var swResult strings.Builder
 		switchMac := s.SimSwitchesMac[sName]
 		isGhost := false
 		if _, ok := s.Switches[sName]; !ok {
 			isGhost = true
 		}
 		if !isGhost {
-			fmt.Fprintf(&result, "switch(a%s).\n", switchMac)
-			fmt.Fprintf(&result, "switchname(a%s, '%s').\n", switchMac, sName)
+			fmt.Fprintf(&swResult, "switch(a%s).\n", switchMac)
+			fmt.Fprintf(&swResult, "switchname(a%s, '%s').\n", switchMac, sName)
 			for portName, connected := range s.SimSwitchPorts[sName] {
 				if connected == "" {
 					continue
 				}
 				macs := s.getPortMacs(sName, portName)
 				for _, mac := range macs {
-					fmt.Fprintf(&result, "seen(a%s,a%s,%s).\n", switchMac, mac, portName)
+					fmt.Fprintf(&swResult, "seen(a%s,a%s,%s).\n", switchMac, mac, portName)
 				}
 			}
 		}
+		result[sName] = swResult.String()
 	}
-	return result.String(), nil
+	return result, nil
 }

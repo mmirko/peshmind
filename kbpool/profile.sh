@@ -21,18 +21,26 @@ CURRENT_DIR="$PWD"
 PROFILE_NAME=""
 PROFILE_DIR=""
 
+switchs=$(../peshmind list -r --config ../peshmind.json)
+
 remove_privsw_files() {
 	local target_dir="$1"
-	find "$target_dir" -maxdepth 1 -type f -name 'privsw-*' -delete
+	for file in $switchs; do
+		if [ -f "$target_dir/$file.pl" ]; then
+			find "$target_dir" -maxdepth 1 -type f -name "$file.pl" -delete
+		fi
+	done
 }
 
 copy_privsw_files() {
 	local source_dir="$1"
 	local target_dir="$2"
 
-	while IFS= read -r -d '' file; do
-		cp "$file" "$target_dir/"
-	done < <(find "$source_dir" -maxdepth 1 -type f -name 'privsw-*' -print0)
+	for file in $switchs; do
+		if [ -f "$source_dir/$file.pl" ]; then
+			cp "$source_dir/$file.pl" "$target_dir/"
+		fi
+	done
 }
 
 case "$COMMAND" in
