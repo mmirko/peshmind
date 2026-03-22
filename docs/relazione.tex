@@ -94,10 +94,11 @@
 \lhead{Relazione Tecnica}
 \rfoot{Pagina \thepage}
 
-\title{\textbf{peshmind} \\
-\vspace{0.5cm}
+\title{
+\includegraphics[width=0.3\textwidth]{img/logo.png} \\
+\vspace{1cm}
 \large \textcolor{red}{P}rolog-based \textcolor{red}{E}ngine for \textcolor{red}{S}ystem \& \textcolor{red}{H}ost \textcolor{red}{M}anagement and \textcolor{red}{In}ference \textcolor{red}{D}aemon \\
-\vspace{0.5cm}
+\vspace{1cm}
 Relazione Tecnica del Progetto}
 \author{Mirko Mariotti}
 \date{Marzo 2026}
@@ -240,7 +241,7 @@ definizione di regole complesse e a ottime prestazioni anche su knowledge base d
 \section{Utilizzo}
 \subsection{Comandi CLI generali}
 
-Gran parte dei comandi CLI di PeshMind sono utilizzabili sia per l'analisi di una rete reale che per la 
+Gran parte dei comandi CLI di peshmind sono utilizzabili sia per l'analisi di una rete reale che per la 
 simulazione di topologie, in quanto operano sui fatti Prolog generati da entrambe le modalità.
 
 \subsubsection{List}
@@ -492,7 +493,7 @@ La modalità di simulazione permette di testare topologie usando file DOT. Il si
 
 \subsection{Simulazione di una Rete a 3 Switch}
 
-Supponiamo di voler simulare una rete con 3 switch. Il file DOT, chiamiamolo \texttt{topology3.dot}, potrebbe essere il seguente:
+Supponiamo di voler simulare una rete con 3 switch. Il file DOT, chiamiamolo \texttt{topology3.dot}, potrebbe essere il seguente: \\
 \begin{lstlisting}[language=DOT]
     digraph dsgraph {
 	node [label="\N"];
@@ -505,14 +506,15 @@ Supponiamo di voler simulare una rete con 3 switch. Il file DOT, chiamiamolo \te
 	"switch-3-5" -> "switch-0-1" [port = 23];
 }
 \end{lstlisting}
+
 In questo esempio, abbiamo tre switch (switch-0-1, switch-0-2, switch-3-5) dei quali uno è centrale (switch-0-1) connesso agli 
-altri due. 
+altri due. \\
 
 Eseguendo il comando di simulazione, otteniamo l'output mostrato di seguito, che include l'identificazione degli switch,
-le porte di connessione e la generazione dei fatti Prolog corrispondenti.
+le porte di connessione e la generazione dei fatti Prolog corrispondenti. \\
 \begin{lstlisting}[language=bash]
 # Simulazione di topologia da file DOT
-% peshmind simulate --config peshmind.json -d simout.dot -o kbpool -s topology3.dot
+% peshmind simulate --config peshmind.json -d simout.dot -o kbpool -s topology3.dot --sim-generate-percentage 30
 # Output di debug:
 Found switch in graph: switch-0-1
 Switch switch-0-1 has 24 ports and extra ports: []
@@ -530,6 +532,64 @@ Output file written to kbpool/switch-0-1.pl
 Output file written to kbpool/switch-0-2.pl
 Output file written to kbpool/switch-3-5.pl
 \end{lstlisting}
+
+Il file DOT generato (\texttt{simout.dot}), in figura \ref{fig:simout3}, rappresenta la topologia simulata, mentre i file Prolog nella directory
+\texttt{kbpool} contengono i fatti generati per ogni switch, pronti per essere caricati nel motore di inferenza. \\
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=.9\textwidth]{img/simout3.png}
+    \caption{Visualizzazione della topologia simulata a 3 switch}
+    \label{fig:simout3}
+\end{figure}
+
+Il files generati dal simulatore sono utilizzabili nella modalità di analisi. Il comando \texttt{serve} carica i fatti
+nella knowledge base e avvia il motore di inferenza, permettendo di eseguire query per identificare la topologia. \\
+
+\begin{lstlisting}[language=bash]
+# Avvio del motore Prolog con i fatti simulati
+peshmind serve --kbpool kbpool
+\end{lstlisting}
+
+Una volta avviato il motore, è possibile eseguire query come quelle mostrate di seguito. \\
+
+\begin{lstlisting}[language=bash]
+# Query per identificare switch esterni (edgeswitch)
+% peshmind query "edgeswitchpn(X,N)"
+# Output:
+&{edgeswitchpn [switch-0-2 24]}
+&{edgeswitchpn [switch-0-2 24]}
+&{edgeswitchpn [switch-3-5 23]}
+&{edgeswitchpn [switch-3-5 23]}
+
+# Query per identificare switch collegati direttamente
+% peshmind query "directpn(X,Y,PORTX,PORTY)"
+# Output:
+&{directpn [switch-0-1 switch-0-2 24 24]}
+&{directpn [switch-0-1 switch-3-5 23 23]}
+&{directpn [switch-0-2 switch-0-1 24 24]}
+&{directpn [switch-3-5 switch-0-1 23 23]}
+\end{lstlisting}
+
+Infine, è possibile generare una visualizzazione grafica,
+mostrata in figura \ref{fig:inferred3},
+della topologia inferita usando il comando \texttt{dot}. \\
+\begin{lstlisting}[language=bash]
+# Generazione file DOT da topologia inferita
+peshmind dot > inferred_topology.dot
+dot -Tpng inferred_topology.dot -o inferred_topology.png
+\end{lstlisting}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=.3\textwidth]{img/inferred3.png}
+    \caption{Visualizzazione della topologia inferita a 3 switch}
+    \label{fig:inferred3}
+\end{figure}
+
+Come si vede la topologia inferita corrisponde esattamente a quella simulata, con switch-0-1 identificato come switch
+di core e switch-0-2 e switch-3-5 identificati come switch di accesso, con le porte di interconnessione correttamente evidenziate. \\
+
 \section{Limitazioni e Sviluppi Futuri}
 
 \subsection{Limitazioni Attuali}
@@ -572,7 +632,7 @@ Output file written to kbpool/switch-3-5.pl
 
 \section{Conclusioni}
 
-PeshMind rappresenta un approccio innovativo alla scoperta automatica di topologie di rete, combinando l'efficienza di Go con la potenza dell'inferenza logica Prolog. Il sistema si è dimostrato efficace nell'identificare automaticamente:
+peshmind rappresenta un approccio innovativo alla scoperta automatica di topologie di rete, combinando l'efficienza di Go con la potenza dell'inferenza logica Prolog. Il sistema si è dimostrato efficace nell'identificare automaticamente:
 
 \begin{itemize}
     \item Connessioni fisiche tra switch
@@ -589,7 +649,7 @@ Il progetto è rilasciato con licenza Apache 2.0, favorendo l'adozione e la cont
 
 \begin{itemize}
     \item SWI-Prolog Documentation: \url{https://www.swi-prolog.org/}
-    \item Pengines Library: \url{https://www.swi-prolog.org/pldoc/doc_for?object=section(%27packages/pengines.html%27)}
+    \item Pengines Library: \url{https://www.swi-prolog.org/pldoc/man?section=pengines}
     \item Cobra CLI Framework: \url{https://github.com/spf13/cobra}
     \item Graphviz Documentation: \url{https://graphviz.org/}
     \item Go Programming Language: \url{https://golang.org/}

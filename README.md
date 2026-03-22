@@ -1,5 +1,9 @@
 # PeshMind
 
+<p align="center">
+  <img src="logo.png" alt="PeshMind Logo">
+</p>
+
 **Prolog-based Engine for System & Host Management and INference Daemon**
 
 PeshMind is a network topology discovery and analysis tool that uses Prolog inference to reconstruct LAN network topology based solely on MAC addresses observed by network switches. The system combines a Go-based CLI application with a Prolog reasoning engine to identify network connections, internal/edge switches, and potential ghost switches in the network infrastructure.
