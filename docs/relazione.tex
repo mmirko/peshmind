@@ -12,27 +12,91 @@
 \usepackage{multicol}
 
 \geometry{margin=2.5cm}
+\setlength{\headheight}{14.5pt}
 
 \lstset{
-    basicstyle=\ttfamily\small,
-    keywordstyle=\color{blue},
-    commentstyle=\color{gray},
-    stringstyle=\color{red},
+    basicstyle=\ttfamily\footnotesize,
+    keywordstyle=\color{blue}\bfseries,
+    commentstyle=\color{green!60!black}\itshape,
+    stringstyle=\color{red!80!black},
+    identifierstyle=\color{black},
+    numberstyle=\tiny\color{gray},
+    emphstyle=\color{orange},
     showstringspaces=false,
     breaklines=true,
     frame=single,
-    numbers=left,
-    numberstyle=\tiny\color{gray}
+    frameround=tttt,
+    backgroundcolor=\color{gray!5},
+    rulecolor=\color{gray!40},
+    numbers=none,
+    numbersep=8pt,
+    captionpos=b,
+    tabsize=4,
+    xleftmargin=10pt,
+    xrightmargin=5pt,
+    framexleftmargin=5pt
+}
+
+% Definizione per il linguaggio DOT (Graphviz)
+\lstdefinelanguage{DOT}{
+    keywords={digraph, graph, node, edge, subgraph},
+    sensitive=true,
+    comment=[l]{//},
+    morecomment=[s]{/*}{*/},
+    morestring=[b]",
+    keywordstyle=\color{blue}\bfseries,
+    commentstyle=\color{green!60!black}\itshape,
+    stringstyle=\color{red!80!black}
+}
+
+% Definizione per JSON
+\lstdefinelanguage{json}{
+    basicstyle=\ttfamily\footnotesize,
+    numbers=none,
+    numberstyle=\tiny\color{gray},
+    stepnumber=1,
+    numbersep=8pt,
+    showstringspaces=false,
+    breaklines=true,
+    frame=single,
+    backgroundcolor=\color{gray!5},
+    string=[s]{"}{"},
+    stringstyle=\color{red!80!black},
+    comment=[l]{:},
+    commentstyle=\color{black},
+    morecomment=[l]{//},
+    morecomment=[s]{/*}{*/},
+    literate=
+     *{0}{{{\color{orange}0}}}{1}
+      {1}{{{\color{orange}1}}}{1}
+      {2}{{{\color{orange}2}}}{1}
+      {3}{{{\color{orange}3}}}{1}
+      {4}{{{\color{orange}4}}}{1}
+      {5}{{{\color{orange}5}}}{1}
+      {6}{{{\color{orange}6}}}{1}
+      {7}{{{\color{orange}7}}}{1}
+      {8}{{{\color{orange}8}}}{1}
+      {9}{{{\color{orange}9}}}{1}
+      {:}{{{\color{blue}{:}}}}{1}
+      {,}{{{\color{blue}{,}}}}{1}
+      {\{}{{{\color{purple}{\{}}}}{1}
+      {\}}{{{\color{purple}{\}}}}}{1}
+      {[}{{{\color{purple}{[}}}}{1}
+      {]}{{{\color{purple}{]}}}}{1}
+      {true}{{{\color{blue!80!black}true}}}{4}
+      {false}{{{\color{blue!80!black}false}}}{5}
+      {null}{{{\color{blue!80!black}null}}}{4}
 }
 
 \pagestyle{fancy}
 \fancyhf{}
-\rhead{PeshMind}
+\rhead{peshmind}
 \lhead{Relazione Tecnica}
 \rfoot{Pagina \thepage}
 
-\title{\textbf{PeshMind} \\
-\large Prolog-based Engine for System \& Host Management and INference Daemon \\
+\title{\textbf{peshmind} \\
+\vspace{0.5cm}
+\large \textcolor{red}{P}rolog-based \textcolor{red}{E}ngine for \textcolor{red}{S}ystem \& \textcolor{red}{H}ost \textcolor{red}{M}anagement and \textcolor{red}{In}ference \textcolor{red}{D}aemon \\
 \vspace{0.5cm}
 Relazione Tecnica del Progetto}
 \author{Mirko Mariotti}
@@ -49,7 +113,7 @@ Relazione Tecnica del Progetto}
 
 \section{Introduzione}
 
-PeshMind è un sistema per la scoperta e l'analisi della topologia di una rete LAN che si basa esclusivamente
+peshmind è un sistema per la scoperta e l'analisi della topologia di una rete LAN che si basa esclusivamente
 sugli indirizzi MAC osservati dagli switch di rete.
 Il sistema combina un'applicazione CLI scritta in Go con un motore Prolog per identificare 
 le connessioni di rete, gli switch interni/di accesso e i potenziali "ghost switch" (switch non censiti)
@@ -58,7 +122,7 @@ presenti nell'infrastruttura di rete.
 \subsection{Motivazione e Obiettivi}
 
 In reti complesse di grandi dimensioni, la documentazione della topologia fisica spesso diventa obsoleta 
-o incompleta. PeshMind affronta questo problema fornendo un sistema automatizzato che:
+o incompleta. peshmind affronta questo problema fornendo un sistema automatizzato che:
 
 \begin{itemize}
     \item Ricostruisce la topologia di rete analizzando solo le tabelle MAC degli switch
@@ -71,7 +135,7 @@ o incompleta. PeshMind affronta questo problema fornendo un sistema automatizzat
 
 \subsection{Componenti Principali}
 
-Il sistema PeshMind è composto da tre componenti principali che interagiscono tra loro:
+Il sistema peshmind è composto da tre componenti principali che interagiscono tra loro:
 
 \subsubsection{Applicazione CLI Go}
 
@@ -183,7 +247,7 @@ simulazione di topologie, in quanto operano sui fatti Prolog generati da entramb
 
 Il comando \texttt{list} visualizza tutti gli switch configurati con i loro dettagli:
 
-\begin{lstlisting}
+\begin{lstlisting}[language=bash]
 peshmind list
 \end{lstlisting}
 
@@ -191,7 +255,7 @@ peshmind list
 
 Il comando \texttt{serve} avvia il motore Prolog con endpoint HTTP:
 
-\begin{lstlisting}
+\begin{lstlisting}[language=bash]
 peshmind serve --kbpool kbpool
 \end{lstlisting}
 
@@ -207,7 +271,7 @@ Esegue le seguenti operazioni:
 
 Il comando \texttt{query} permette di interrogare il motore Prolog:
 
-\begin{lstlisting}
+\begin{lstlisting}[language=bash]
 # Trova tutti gli switch
 peshmind query "switch(X)"
 
@@ -222,7 +286,7 @@ peshmind query "ghostn(X,Y)"
 
 Il comando \texttt{dot} genera una rappresentazione grafica della topologia:
 
-\begin{lstlisting}
+\begin{lstlisting}[language=bash]
 peshmind dot > network.dot
 dot -Tpng network.dot -o network.png
 \end{lstlisting}
@@ -241,7 +305,7 @@ Il file DOT generato include:
 
 Il comando \texttt{update} recupera le tabelle MAC dagli switch:
 
-\begin{lstlisting}
+\begin{lstlisting}[language=bash]
 # Aggiorna uno switch specifico
 peshmind update --switch switch-01
 
@@ -264,7 +328,7 @@ Questo comando:
 
 Il comando \texttt{simulate} permette di testare topologie:
 
-\begin{lstlisting}
+\begin{lstlisting}[language=bash]
 peshmind simulate --simname topology.dot \
     --emit-dot output.dot \
     --output facts.pl
@@ -283,7 +347,7 @@ In questa sezione vengono descritte le principali regole di inferenza implementa
 
 Due switch sono "lontani" se sono connessi a un terzo switch sulla stessa porta:
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Prolog]
 far(X,Y) :- 
     seen(X,K,MIDPORTX), 
     seen(Y,K,MIDPORTY),
@@ -301,7 +365,7 @@ Questo predicato identifica la presenza di uno switch intermedio tra due switch.
 
 Due switch sono direttamente connessi se non sono lontani:
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Prolog]
 direct(X,Y) :- \+ far(X,Y).
 \end{lstlisting}
 
@@ -309,7 +373,7 @@ direct(X,Y) :- \+ far(X,Y).
 
 Connessione diretta con informazioni sulle porte:
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Prolog]
 directp(X,Y,PORTX,PORTY) :- 
     seen(X,Y,PORTX),
     seen(Y,X,PORTY),
@@ -320,7 +384,7 @@ directp(X,Y,PORTX,PORTY) :-
 
 Identifica ghost switch tra due switch direttamente connessi:
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Prolog]
 ghost(X,Y) :- 
     directp(X,Y,PORTX,PORTY),
     seen(X,Z,PORTX),
@@ -334,7 +398,7 @@ Se due switch vedono lo stesso MAC (non switch) sulle porte di interconnessione,
 
 Identifica switch interni (core/distribuzione):
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Prolog]
 internalswitch(X) :- 
     seen(X,Y,PORT1),
     seen(X,Z,PORT2),
@@ -349,7 +413,7 @@ Uno switch è interno se è connesso ad almeno due switch diversi.
 
 Identifica switch di accesso:
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Prolog]
 edgeswitch(X) :- switch(X), \+ internalswitch(X).
 \end{lstlisting}
 
@@ -360,7 +424,7 @@ edgeswitch(X) :- switch(X), \+ internalswitch(X).
 Il file \texttt{peshmind.json} definisce gli switch e i parametri di sistema in entrambe le modalità 
 (di analisi e simulazione). Ecco un esempio di configurazione:
 
-\begin{lstlisting}
+\begin{lstlisting}[language=json]
 {
   "debug": true,
   "endpoint": "http://localhost:3030/pengine",
@@ -426,73 +490,62 @@ La modalità di simulazione permette di testare topologie usando file DOT. Il si
 
 \section{Esempi di Utilizzo}
 
-\subsection{Scoperta Topologia di Rete Esistente}
+\subsection{Simulazione di una Rete a 3 Switch}
 
-\textbf{Scenario}: Un amministratore di rete deve documentare una rete esistente con documentazione obsoleta.
+Supponiamo di voler simulare una rete con 3 switch. Il file DOT, chiamiamolo \texttt{topology3.dot}, potrebbe essere il seguente:
+\begin{lstlisting}[language=DOT]
+    digraph dsgraph {
+	node [label="\N"];
+	"switch-0-1";
+	"switch-0-2";
+	"switch-3-5";
+	"switch-0-1" -> "switch-0-2" [port = 24]; 
+	"switch-0-2" -> "switch-0-1" [port = 24];
+	"switch-0-1" -> "switch-3-5" [port = 23];
+	"switch-3-5" -> "switch-0-1" [port = 23];
+}
+\end{lstlisting}
+In questo esempio, abbiamo tre switch (switch-0-1, switch-0-2, switch-3-5) dei quali uno è centrale (switch-0-1) connesso agli 
+altri due. 
 
-\textbf{Procedimento}:
-\begin{enumerate}
-    \item Configurare tutti gli switch gestiti in \texttt{peshmind.json}
-    \item Eseguire \texttt{peshmind update --switch all}
-    \item Avviare il motore: \texttt{peshmind serve}
-    \item Interrogare: \texttt{peshmind query "directpn(X,Y,PX,PY)"}
-    \item Generare visualizzazione: \texttt{peshmind dot > topology.dot}
-\end{enumerate}
-
-\subsection{Identificazione Ghost Switch}
-
-\textbf{Scenario}: Identificare switch non gestiti o non documentati nella rete.
-
-\textbf{Procedimento}:
-\begin{enumerate}
-    \item Acquisire dati da switch gestiti
-    \item Interrogare: \texttt{peshmind query "ghostn(X,Y)"}
-    \item Analizzare i risultati per identificare switch mancanti
-    \item Aggiungere gli switch alla configurazione se necessario
-\end{enumerate}
-
-\subsection{Classificazione Switch}
-
-\textbf{Scenario}: Determinare quali switch sono core/distribuzione e quali sono di accesso.
-
-\textbf{Procedimento}:
-\begin{enumerate}
-    \item Switch interni: \texttt{peshmind query "internalswitchn(X)"}
-    \item Switch di accesso: \texttt{peshmind query "edgeswitchn(X)"}
-    \item Analizzare la distribuzione per ottimizzare la rete
-\end{enumerate}
-
-\subsection{Testing Modifiche alla Rete}
-
-\textbf{Scenario}: Validare una nuova topologia prima dell'implementazione fisica.
-
-\textbf{Procedimento}:
-\begin{enumerate}
-    \item Creare un file DOT della topologia proposta
-    \item Eseguire simulazione: \texttt{peshmind simulate --simname new-topology.dot}
-    \item Verificare connettività e relazioni
-    \item Identificare potenziali problemi prima dell'implementazione
-\end{enumerate}
-
-
-
+Eseguendo il comando di simulazione, otteniamo l'output mostrato di seguito, che include l'identificazione degli switch,
+le porte di connessione e la generazione dei fatti Prolog corrispondenti.
+\begin{lstlisting}[language=bash]
+# Simulazione di topologia da file DOT
+% peshmind simulate --config peshmind.json -d simout.dot -o kbpool -s topology3.dot
+# Output di debug:
+Found switch in graph: switch-0-1
+Switch switch-0-1 has 24 ports and extra ports: []
+Found switch in graph: switch-0-2
+Switch switch-0-2 has 24 ports and extra ports: []
+Found switch in graph: switch-3-5
+Switch switch-3-5 has 24 ports and extra ports: []
+Edge name: %3 from switch-0-1 to switch-0-2 port: 24
+Edge name: %7 from switch-0-1 to switch-3-5 port: 23
+Edge name: %1 from switch-0-2 to switch-0-1 port: 24
+Edge name: %5 from switch-3-5 to switch-0-1 port: 23
+Switch ports mapping: map[switch-0-1:map[23:switch-3-5 24:switch-0-2] switch-0-2:map[24:switch-0-1] switch-3-5:map[23:switch-0-1]]
+DOT file written to simout.dot
+Output file written to kbpool/switch-0-1.pl
+Output file written to kbpool/switch-0-2.pl
+Output file written to kbpool/switch-3-5.pl
+\end{lstlisting}
 \section{Limitazioni e Sviluppi Futuri}
 
 \subsection{Limitazioni Attuali}
 
 \begin{itemize}
-    \item Supporto limitato a modelli HP-Aruba
-    \item Richiede accesso SSH agli switch
+    \item Supporto limitato di modelli di switch, ogni modello ha bisogno di un template specifico
+    \item Richiede accesso SSH/console agli switch
     \item Non gestisce VLAN multiple in modo esplicito
-    \item Visualizzazioni DOT richiedono post-processing manuale
 \end{itemize}
 
-\subsection{Sviluppi Futuri}
+\subsection{Possibili Sviluppi Futuri}
 
 \begin{enumerate}
-    \item \textbf{Supporto Multi-Vendor}
+    \item \textbf{Query più esaustive}
     \begin{itemize}
-        \item Aggiungere template per Cisco, Juniper, Arista
+        \item Aggiungere template per un maggior numero di modelli di switch
         \item Supporto SNMP come alternativa a SSH
     \end{itemize}
     
@@ -507,13 +560,6 @@ La modalità di simulazione permette di testare topologie usando file DOT. Il si
         \item Dashboard per visualizzazione interattiva
         \item Editor grafico topologie
         \item Monitoring real-time
-    \end{itemize}
-    
-    \item \textbf{Analisi Avanzate}
-    \begin{itemize}
-        \item Identificazione loop
-        \item Analisi percorsi ridondanti
-        \item Suggerimenti ottimizzazione
     \end{itemize}
     
     \item \textbf{Integrazione}
