@@ -38,14 +38,14 @@ internalswitch(X) :- seen(X,Y,PORT1),
 
 % Internal switches by name
 internalswitchn(XNAME) :- switchname(X,XNAME),
-		internalswitch(X).
+		once(internalswitch(X)).
 
 % A switch is an edge switch if it is not an internal switch.
 edgeswitch(X) :- switch(X), \+ internalswitch(X).
 
 % Edge switches by name
 edgeswitchn(XNAME) :- switchname(X,XNAME),
-			edgeswitch(X).
+			once(edgeswitch(X)).
 
 % An enge switch and it's port
 edgeswitchp(X,PORT) :-  seen(X,Y,PORT),
@@ -54,7 +54,7 @@ edgeswitchp(X,PORT) :-  seen(X,Y,PORT),
 
 % An edge switch and it's port by name
 edgeswitchpn(XNAME,PORT) :- switchname(X,XNAME),
-			edgeswitchp(X,PORT).
+			once(edgeswitchp(X,PORT)).
 
 % If two directly connected switches sees the same thing (not a switch) on the ports they are connected on, then there is ghost switch between them.
 ghost(X,Y) :- directp(X,Y,PORTX,PORTY),
