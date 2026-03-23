@@ -1,0 +1,78 @@
+{
+	"debug": true,
+	"endpoint": "http://localhost:3030/pengine",
+	"switches": {
+		"switch-0-1": {
+			"name": "switch-0-1",
+			"mac": "e4115b740100",
+			"description": "",
+			"ip": "10.0.0.1",
+			"Username": "admin",
+			"Password": "ask",
+			"model": "HP-Aruba",
+			"port": 24,
+			"extraports": [],
+			"data": ""
+		},
+		"switch-0-2": {
+			"name": "switch-0-2",
+			"mac": "002347bb73c0",
+			"description": "",
+			"ip": "10.0.0.2",
+			"Username": "admin",
+			"Password": "ask",
+			"model": "HP-Aruba",
+			"port": 24,
+			"extraports": [],
+			"data": ""
+		},
+		"switch-0-3": {
+			"name": "switch-0-3",
+			"mac": "e0045627d8a0",
+			"description": "",
+			"ip": "10.0.0.3",
+			"Username": "admin",
+			"Password": "ask",
+			"model": "HP-Aruba",
+			"port": 24,
+			"extraports": [],
+			"data": ""
+		},
+		"switch-3-5": {
+			"name": "switch-3-5",
+			"mac": "0011856d4640",
+			"description": "",
+			"ip": "10.0.3.5",
+			"Username": "admin",
+			"Password": "ask",
+			"model": "HP-Aruba-Press",
+			"port": 24,
+			"extraports": [],
+			"data": ""
+		},
+		"switch-3-30": {
+			"name": "switch-3-30",
+			"mac": "e0071ba2d8a0",
+			"description": "",
+			"ip": "10.0.3.30",
+			"Username": "admin",
+			"Password": "ask",
+			"model": "HP-Aruba",
+			"port": 24,
+			"extraports": [],
+			"data": ""
+		},
+		"switch-3-31": {
+			"name": "switch-3-31",
+			"mac": "e0071bb34d8a0",
+			"description": "",
+			"ip": "10.0.3.31",
+			"Username": "admin",
+			"Password": "ask",
+			"model": "HP-Aruba",
+			"port": 24,
+			"extraports": [],
+			"data": ""
+		}
+	}
+}
