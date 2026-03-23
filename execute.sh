@@ -36,7 +36,12 @@ sim() {
 		clean
 	fi
 	go build
-	cp simpool/peshmind.json .
+	if [[ -f "$arg.json" ]]; then
+		cp "$arg.json" peshmind.json
+	else
+		echo "Warning: config file '$arg.json' not found. Using default config." >&2
+		cp simpool/peshmind.json .
+	fi
 	./peshmind simulate --config peshmind.json -d simout.dot -o kbpool -s "$arg" 
 	:
 }
