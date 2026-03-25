@@ -91,7 +91,7 @@
 \pagestyle{fancy}
 \fancyhf{}
 \rhead{peshmind}
-\lhead{Relazione Tecnica}
+\lhead{Relazione Progetto "Programmazione Dichiarativa"}
 \rfoot{Pagina \thepage}
 
 \title{
@@ -99,7 +99,7 @@
 \vspace{1cm}
 \large \textcolor{red}{P}rolog-based \textcolor{red}{E}ngine for \textcolor{red}{S}ystem \& \textcolor{red}{H}ost \textcolor{red}{M}anagement and \textcolor{red}{In}ference \textcolor{red}{D}aemon \\
 \vspace{1cm}
-Relazione Tecnica del Progetto}
+Relazione Progetto "Programmazione Dichiarativa"}
 \author{Mirko Mariotti}
 \date{Marzo 2026}
 
@@ -170,7 +170,9 @@ La base di conoscenza memorizza i dati degli switch e degli indirizzi MAC sotto 
 
 Il sistema supporta due flussi di lavoro principali, quello di analisi di una rete esistente e 
 quello di simulazione di topologie di rete. Il secondo è particolarmente utile per testare e validare le regole
-di inferenza Prolog prima di applicarle a dati reali.
+di inferenza Prolog prima di applicarle a dati reali. \\
+A grandi linee, i flussi di lavoro seguono i passaggi descritti di seguito, l'argomento sarà approfondito nelle sezioni
+successive con esempi pratici e dettagli tecnici.
 
 \begin{multicols}{2}
         \textbf{Analisi Rete Esistente}
@@ -238,11 +240,46 @@ SWI-Prolog fornisce il motore di inferenza grazie a un potente sistema di infere
 libreria Pengines per l'esposizione di API HTTP, a una sintassi dichiarativa particolarmente adatta alla 
 definizione di regole complesse e a ottime prestazioni anche su knowledge base di grandi dimensioni.
 
+\section{Installazione}
+\subsection{Prerequisiti}
+
+Per compilare ed eseguire peshmind, sono necessari i seguenti software
+
+\begin{itemize}
+    \item Git (per clonare il repository)
+    \item Go 1.20 o superiore (per compilare l'applicazione CLI)
+    \item SWI-Prolog 8.0 o superiore (per il motore di inferenza)
+    \item Graphviz (per generazione visualizzazioni)
+\end{itemize}
+
+\subsection{Installazione}
+
+l'applicazione è scaricabile dal repository GitHub del progetto \\
+
+\begin{lstlisting} 
+    git clone https://github.com/mmirko/peshmind.git
+\end{lstlisting}
+
+Dopo aver clonato il repository, è possibile compilare l'applicazione CLI con il comando: \\
+\begin{lstlisting}
+    cd peshmind
+    go build -o peshmind main.go
+\end{lstlisting}
+
+Il binario compilato sarà disponibile nella directory corrente e potrà essere eseguito da terminale.
+In alternativa, è possibile copiare il binario in una directory presente nel PATH per renderlo accessibile globalmente. \\
+
+In questo caso è necessario assicurarsi di mantenere la directory \texttt{kbpool} e i file Prolog al suo interno, in quanto
+sono necessari per il corretto funzionamento del sistema.
+
 \section{Utilizzo}
 \subsection{Comandi CLI generali}
 
 Gran parte dei comandi CLI di peshmind sono utilizzabili sia per l'analisi di una rete reale che per la 
-simulazione di topologie, in quanto operano sui fatti Prolog generati da entrambe le modalità.
+simulazione di topologie, in quanto operano sui fatti Prolog generati da entrambe le modalità. \\
+Per la corretta esecuzione dei comandi, in ogni modalità, sono necessari: il file di configurazione \texttt{peshmind.json} 
+e i fatti Prolog nella directory \texttt{kbpool} (generati da \texttt{update} o \texttt{simulate} a seconda della modalità)
+che contiene anche le regole di inferenza (\texttt{rules.pl}) e il server Pengines (\texttt{server.pl}).
 
 \subsubsection{List}
 
@@ -260,13 +297,10 @@ Il comando \texttt{serve} avvia il motore Prolog con endpoint HTTP:
 peshmind serve --kbpool kbpool
 \end{lstlisting}
 
-Esegue le seguenti operazioni:
-\begin{itemize}
-    \item Verifica la presenza di SWI-Prolog
-    \item Esegue \texttt{createkb.sh} per consolidare i fatti
-    \item Avvia il server HTTP sulla porta 3030
-    \item Rimane in esecuzione fino a Ctrl+C
-\end{itemize}
+Una volta avviato, il motore è pronto a ricevere query e a rispondere con i risultati dell'inferenza logica.
+Tecnicamente, questo comando lancia e mantiene attivo un processo Prolog che carica i fatti e le regole dalla directory
+\texttt{kbpool} e espone un endpoint HTTP RESTful per l'interrogazione. Il processo rimane attivo fino a quando non viene
+interrotto manualmente con CTRL+C o con un comando di terminazione del processo.
 
 \subsubsection{Query}
 
@@ -283,9 +317,16 @@ peshmind query "directn(X,Y)"
 peshmind query "ghostn(X,Y)"
 \end{lstlisting}
 
+In questo caso, il comando invia la query all'istanza di peshmind che esegue il sottocomando \texttt{serve} e riceve
+i risultati, che vengono poi formattati e stampati a terminale. \\
+I due sottocomandi \texttt{query} e \texttt{serve} sono progettati per essere utilizzati insieme, 
+dove \texttt{serve} mantiene attivo il motore Prolog e \texttt{query} invia richieste di inferenza. \\
+Per dettagli sulle regole di inferenza implementate, si rimanda alla sezione \ref{sec:inference}.
+
 \subsubsection{Dot}
 
-Il comando \texttt{dot} genera una rappresentazione grafica della topologia:
+Il comando \texttt{dot} genera un file DOT che rappresenta la topologia inferita. Tale file può essere visualizzato 
+con i tool di Graphviz (dot, fdp, neato, ecc.) per ottenere una rappresentazione grafica della rete: \\
 
 \begin{lstlisting}[language=bash]
 peshmind dot > network.dot
@@ -304,7 +345,7 @@ Il file DOT generato include:
 
 \subsubsection{Update}
 
-Il comando \texttt{update} recupera le tabelle MAC dagli switch:
+Il comando \texttt{update} recupera le tabelle MAC dagli switch: \\
 
 \begin{lstlisting}[language=bash]
 # Aggiorna uno switch specifico
@@ -316,9 +357,9 @@ peshmind update --switch all
 
 Questo comando:
 \begin{enumerate}
-    \item Si connette allo switch via SSH usando expect
-    \item Esegue comandi per ottenere la tabella MAC
-    \item Parsifica l'output con espressioni regolari
+    \item Si connette allo switch via SSH o telnet usando le credenziali fornite nel file di configurazione
+    \item Processaa un template di comandi specifico per il modello di switch e, utilizzando expect, interagisce con la shell dello switch per eseguire i comandi necessari a ottenere la tabella MAC
+    \item Analizza l'output con espressioni regolari
     \item Genera fatti Prolog nel formato \texttt{seen/3}
     \item Salva il file nella directory \texttt{kbpool}
 \end{enumerate}
@@ -337,9 +378,11 @@ peshmind simulate --simname topology.dot \
 
 Anch'esso. alla pari del comando \texttt{update}, genera fatti Prolog, ma invece di connettersi a switch reali,
 genera i fatti in maniera programmatica a partire da un file DOT che descrive la topologia desiderata. Supporta
-attributi speciali per identificare ghost switch, specificare MAC address e porte di connessione.
+attributi speciali per identificare ghost switch, specificare MAC address e porte di connessione. Dettagli sulla
+struttura del file DOT e sugli attributi supportati sono forniti nella sezione \ref{sec:conf}.
 
 \section{Inferenza Logica con Prolog}
+\label{sec:inference}
 
 Il cuore del sistema è il motore di inferenza Prolog, che utilizza i fatti generati per dedurre la topologia di rete.
 In questa sezione vengono descritte le principali regole di inferenza implementate in Prolog.
@@ -419,6 +462,7 @@ edgeswitch(X) :- switch(X), \+ internalswitch(X).
 \end{lstlisting}
 
 \section{Dettagli di Configurazione}
+\label{sec:conf}
 
 \subsection{File di Configurazione}
 
@@ -455,11 +499,11 @@ Il file \texttt{peshmind.json} definisce gli switch e i parametri di sistema in 
         \item \textbf{mac}: Indirizzo MAC dello switch (senza separatori)
         \item \textbf{description}: Descrizione leggibile
         \item \textbf{ip}: Indirizzo IP di gestione
-        \item \textbf{username}: Nome utente SSH
-        \item \textbf{password}: Password SSH (usa "ask" per input interattivo)
-        \item \textbf{model}: Modello switch (HP-Aruba, HP-Aruba-Press)
+        \item \textbf{username}: Nome utente SSH/telnet
+        \item \textbf{password}: Password SSH/telnet (usa "ask" per input interattivo)
+        \item \textbf{model}: Modello switch (per template comandi)
         \item \textbf{port}: Numero di porte fisiche
-        \item \textbf{extraports}: Porte aggiuntive da monitorare
+        \item \textbf{extraports}: Porte aggiuntive (per es. trunk, uplink, ecc.)
     \end{itemize}
 \end{itemize}
 
@@ -475,21 +519,24 @@ di simulazione.
 La modalità di simulazione permette di testare topologie usando file DOT. Il sistema:
 
 \begin{enumerate}
-    \item Parsifica il grafo DOT usando la libreria \texttt{go-graphviz}
+    \item Analizza il grafo DOT usando la libreria \texttt{go-graphviz}
     \item Identifica nodi switch (normali e ghost)
     \item Estrae le connessioni dagli archi del grafo
     \item Genera MAC address fittizi per dispositivi end-node
     \item Produce fatti Prolog equivalenti
-    \item Supporta attributi speciali:
+    \item Supporta i seguenti attributi speciali che possono essere aggiunti ai nodi:
     \begin{itemize}
-        \item \texttt{ghost="true"} - Marca ghost switch
+        \item \texttt{ghost="true"} - Specifica che il nodo è un ghost switch
         \item \texttt{mac="..."} - Specifica MAC per ghost switch
         \item \texttt{port="N"} - Specifica porta di connessione
         \item \texttt{ports="N"} - Numero di porte per ghost switch
     \end{itemize}
 \end{enumerate}
 
+Un esempio di file DOT per la simulazione è mostrato nella sezione \ref{sec:examples}.
+
 \section{Esempi di Utilizzo}
+\label{sec:examples}
 
 \subsection{Simulazione di una rete a 3 Switch}
 
