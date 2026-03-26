@@ -33,7 +33,7 @@ PeshMind is a network topology discovery and analysis tool that uses Prolog infe
 - **Ghost Switch Detection**: Identifies switches that exist in the network but are not directly managed
 - **Network Visualization**: Generates DOT files for graphical network topology representation
 - **Simulation Mode**: Test and validate network topologies using simulated switch data
-- **Multiple Switch Models Support**: Currently supports HP-Aruba and HP-Aruba-Press switches
+- **Multiple Switch Models Support**: Supports various switch models with customizable data fetching templates
 - **RESTful Prolog Engine**: Serves Prolog queries via HTTP using Pengines
 
 ## Architecture
@@ -44,58 +44,57 @@ PeshMind consists of three main components:
 2. **Prolog Inference Engine**: Analyzes MAC address relationships and infers network topology
 3. **Knowledge Base**: Stores switch and MAC address data in Prolog facts
 
-The system workflow:
+and of two possible workflows:
+
+#### The network analysis workflow:
+
 1. Fetch MAC address tables from physical switches
 2. Convert switch data to Prolog facts (`switch/1`, `switchname/2`, `seen/3`)
 3. Load facts into Prolog engine with inference rules
 4. Query the engine to discover topology, connectivity, and ghost switches
 5. Visualize results using DOT graphs
 
-## Prerequisites
+#### The simulation workflow:
+
+1. Load a predefined network topology from a DOT file
+2. Generate Prolog facts based on the simulated topology
+3. Run inference to validate the topology and test edge cases
+
+## Installation and Setup
+
+### Prerequisites
 
 - **Go**: Version 1.23.3 or higher
 - **SWI-Prolog**: Required for the Prolog inference engine
 - **Expect**: Used for automated switch SSH sessions (included in templates)
 - **Graphviz** (optional): For rendering DOT files to images
 
-### Installing Dependencies
-
-#### Ubuntu/Debian
-```bash
-sudo apt-get update
-sudo apt-get install swi-prolog expect graphviz
-```
-
-#### macOS
-```bash
-brew install swi-prolog expect graphviz
-```
-
-#### Fedora/RHEL
-```bash
-sudo dnf install pl expect graphviz
-```
-
-## Installation
+### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/mmirko/peshmind.git
 cd peshmind
 ```
 
 2. Build the application:
+
 ```bash
 go build -o peshmind
 ```
 
 3. (Optional) Install globally:
+
 ```bash
 sudo cp peshmind /usr/local/bin/
 ```
 
+if you want to run `peshmind` from any directory. In this case, make sure to create the configuration file in your working directory and to have the `kbpool` directory for storing Prolog facts.
+
 ## Configuration
 
+Both the network analysis and simulation workflows require a configuration file to define switches, their properties, and the Prolog engine endpoint.
 Create a `peshmind.json` configuration file in your working directory:
 
 ```json
@@ -128,9 +127,9 @@ Create a `peshmind.json` configuration file in your working directory:
   - **mac**: Switch MAC address (without separators)
   - **description**: Human-readable description
   - **ip**: Management IP address
-  - **username**: SSH username
-  - **password**: SSH password (use "ask" for interactive input)
-  - **model**: Switch model (`HP-Aruba` or `HP-Aruba-Press`)
+  - **username**: SSH/telnet username
+  - **password**: SSH/telnet password (use "ask" for interactive input)
+  - **model**: Switch model
   - **port**: Number of physical ports
   - **extraports**: Additional ports to monitor
   - **data**: Internal field for fetched data
@@ -145,25 +144,6 @@ Display all configured switches:
 peshmind list
 ```
 
-### Update Switch Data
-
-Fetch MAC address tables from switches and save to knowledge base:
-
-```bash
-# Update a specific switch
-peshmind update --switch switch-01
-
-# Update all switches
-peshmind update --switch all
-```
-
-The command will:
-1. Prompt for admin password if configured as "ask"
-2. Connect to switch via SSH
-3. Fetch MAC address table
-4. Parse and convert to Prolog facts
-5. Save to `kbpool/<switch-name>.pl`
-
 ### Serve Prolog Engine
 
 Start the Prolog inference engine with HTTP endpoint:
@@ -173,6 +153,7 @@ peshmind serve --kbpool kbpool
 ```
 
 This will:
+
 1. Check for SWI-Prolog installation
 2. Create consolidated knowledge base (`data.pl`)
 3. Start Prolog HTTP server on port 3030
@@ -216,6 +197,7 @@ peshmind dot > network.dot
 ```
 
 Render to image:
+
 ```bash
 dot -Tpng network.dot -o network.png
 # or
@@ -223,12 +205,35 @@ neato -Tpng network.dot -o network.png
 ```
 
 The DOT output includes:
+
 - Switches in clusters with their ports
 - Physical connections between ports
 - Ghost switches (unmanaged intermediate switches)
 - Color-coded representation
 
-### Simulate Network Topology
+
+### Update Switch Data (analysis workflow)
+
+Fetch MAC address tables from switches and save to knowledge base:
+
+```bash
+# Update a specific switch
+peshmind update --switch switch-01
+
+# Update all switches
+peshmind update --switch all
+```
+
+The command will:
+
+1. Prompt for admin password if configured as "ask"
+2. Connect to switch via SSH
+3. Fetch MAC address table
+4. Parse and convert to Prolog facts
+5. Save to `kbpool/<switch-name>.pl`
+
+
+### Simulate Network Topology (simulation workflow)
 
 Test and validate network topologies using simulation mode:
 
@@ -277,14 +282,4 @@ All predicates have `*n` variants that use switch names instead of MAC addresses
 
 Copyright © 2026 Mirko Mariotti <mirko@mirkomariotti.it>
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+This project is licensed under the Apache License 2.0. See the [LICENSE](LICENSE) file for details.
