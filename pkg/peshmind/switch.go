@@ -48,6 +48,8 @@ func (s *Switch) modelTemplate() (string, error) {
 		return HPArubaExpScript, nil
 	case "HP-Aruba-Press":
 		return HPArubaExpScriptPress, nil
+	case "Quanta":
+		return QuantaExpScript, nil
 	default:
 		return "", fmt.Errorf("unsupported switch model: %s", s.Model)
 	}
@@ -92,7 +94,7 @@ func (s *Switch) FetchData() error {
 	if err != nil {
 		return fmt.Errorf("failed to create temp directory: %w", err)
 	}
-	defer os.RemoveAll(tempDir) // Clean up the temp directory after use
+	// defer os.RemoveAll(tempDir) // Clean up the temp directory after use
 
 	// Create a file to store the switch fectch script
 	scriptFileName := fmt.Sprintf("%s/%s", tempDir, s.Name)
@@ -170,6 +172,24 @@ func (s *Switch) SaveKB(kbpool string) error {
 				if err != nil {
 					return fmt.Errorf("failed to write to KB file: %w", err)
 				}
+				continue
+			}
+
+			fmt.Println(line)
+			re = regexp.MustCompile("(?P<vlan>[0-9]+)\\s+(?P<mac>([a-fA-F0-9]{2}:){5}[a-fA-F0-9]{2})\\s+0/(?P<port>[a-zA-Z0-9]+).+")
+			if re.MatchString(line) {
+				mac := re.ReplaceAllString(string(line), "${mac}")
+				mac = strings.ReplaceAll(mac, ":", "")
+				mac = strings.ToLower(mac)
+				port := re.ReplaceAllString(string(line), "${port}")
+				port = strings.ToLower(port)
+				// vlan := re.ReplaceAllString(string(line), "${vlan}")
+				// Write the data to the file
+				_, err := file.WriteString(fmt.Sprintf("seen(a%s,a%s,%s).\n", s.Mac, mac, port))
+				if err != nil {
+					return fmt.Errorf("failed to write to KB file: %w", err)
+				}
+				continue
 			}
 		}
 	}
